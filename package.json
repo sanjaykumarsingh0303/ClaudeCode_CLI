@@ -1,0 +1,16 @@
+{
+  "name": "claude-code-mcp-practice",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Practice project: a local stdio MCP server for Claude Code CLI",
+  "scripts": {
+    "start": "node src/server.ts",
+    "harness": "node harness/cli.ts",
+    "check": "node scripts/check-mcp.mjs && node scripts/check-harness.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.21.0",
+    "zod": "^3.25.76"
+  }
+}

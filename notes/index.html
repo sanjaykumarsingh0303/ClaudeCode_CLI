@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Code CLI practice notes</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e5e4;
+      --paper: #fafaf9;
+      --card: #ffffff;
+      --accent: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", Palatino, Georgia, serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 4rem;
+    }
+    h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 0.5rem; }
+    h2 {
+      font-size: 1.25rem;
+      margin: 2.25rem 0 0.75rem;
+      padding-top: 0.25rem;
+    }
+    p, li { font-size: 1.05rem; }
+    .lede { color: var(--muted); margin-top: 0; }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      margin: 1.5rem 0 0;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.92rem;
+    }
+    nav a { color: var(--accent); }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.25rem 1.25rem 1rem;
+      margin-top: 1.25rem;
+    }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.86rem;
+    }
+    code { background: #f5f5f4; padding: 0.1rem 0.3rem; border-radius: 4px; }
+    pre {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: 0.9rem 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.98rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.45rem 0.5rem 0.45rem 0; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 600; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.82rem; }
+    ol, ul { padding-left: 1.2rem; }
+    .flow { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.98rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Claude Code CLI practice notes</h1>
+    <p class="lede">How this folder generates code, and how Claude Code talks to the local servers.</p>
+    <nav>
+      <a href="#folder">Folder</a>
+      <a href="#harness">Harness command</a>
+      <a href="#claude">From Claude</a>
+      <a href="#servers">Servers</a>
+      <a href="#notebook">Notebook</a>
+    </nav>
+
+    <section id="folder">
+      <h2>Folder</h2>
+      <table>
+        <thead>
+          <tr><th>Path</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>harness/</code></td><td>Fake harness. It writes the code itself.</td></tr>
+          <tr><td><code>src/server.ts</code></td><td>Practice notebook MCP server.</td></tr>
+          <tr><td><code>workspace/src</code></td><td>Generated modules.</td></tr>
+          <tr><td><code>workspace/test</code></td><td>Generated tests.</td></tr>
+          <tr><td><code>.mcp.json</code></td><td>Tells Claude Code which servers to start.</td></tr>
+          <tr><td><code>.claude/commands</code></td><td>Slash commands <code>/gen</code>, <code>/test</code>, and <code>/auto</code>.</td></tr>
+          <tr><td><code>data/notes.json</code></td><td>Saved notebook. This file stays off Git.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="harness">
+      <h2>Harness command</h2>
+      <p class="flow">You run <code>npm run harness</code>, the harness writes the module and the test, then it runs the tests.</p>
+      <pre><code>npm run harness -- function "order total with tax and a percentage discount"
+npm run harness -- function "add 2 numbers"</code></pre>
+      <p>The first word is the command. The quoted text is the requirement. Add <code>--overwrite</code> when the files already exist.</p>
+      <p>The harness wrote these two modules:</p>
+      <ul>
+        <li><code>workspace/src/add-2-numbers.js</code> returns <code>left + right</code>.</li>
+        <li><code>workspace/src/order-total-tax-percentage.js</code> applies the percentage discount, then the tax.</li>
+      </ul>
+    </section>
+
+    <section id="claude">
+      <h2>From Claude</h2>
+      <p class="flow">Claude Code sends the command and the requirement to the harness. The harness generates the code.</p>
+      <pre><code>cd /Users/sanjaysingh/Documents/ClaudeCode_CLI
+claude</code></pre>
+      <p>Inside the session:</p>
+      <pre><code>/gen function add 2 numbers
+/test add-2-numbers</code></pre>
+      <ol>
+        <li><code>/gen</code> calls the harness <code>build</code> tool.</li>
+        <li>The harness writes <code>workspace/src</code> and <code>workspace/test</code>.</li>
+        <li>The harness runs the tests and lint.</li>
+        <li>Claude shows the file names and the result.</li>
+      </ol>
+      <p><code>/test</code> only runs the tests and reports them. It leaves the files as they are.</p>
+    </section>
+
+    <section id="servers">
+      <h2>Servers</h2>
+      <p>Claude Code starts both servers from <code>.mcp.json</code> when you open <code>claude</code> in this folder.</p>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Command</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>fake-harness</code></td>
+            <td><code>node harness/server.ts</code></td>
+            <td><code>build</code>, <code>generate</code>, <code>run_tests</code>, <code>lint</code></td>
+          </tr>
+          <tr>
+            <td><code>practice-notes</code></td>
+            <td><code>node src/server.ts</code></td>
+            <td><code>add_note</code>, <code>list_notes</code>, <code>search_notes</code>, <code>update_note</code>, <code>delete_note</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="notebook">
+      <h2>Notebook</h2>
+      <p>One note is saved in the local notebook.</p>
+      <table>
+        <tbody>
+          <tr><th>Title</th><td>edited title</td></tr>
+          <tr><th>Body</th><td>I connected an MCP server</td></tr>
+          <tr><th>Id</th><td><code>668d0697-94e8-4910-8279-6233bece7b54</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

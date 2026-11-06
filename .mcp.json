@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "practice-notes": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["src/server.ts"]
+    },
+    "fake-harness": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["harness/server.ts"]
+    }
+  }
+}
